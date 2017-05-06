@@ -60,11 +60,11 @@ public class Main extends JFrame {
         }
 
         Transform3D trWarrior = new Transform3D();
+        Transform3D trWarriorRotate = new Transform3D();
+        trWarriorRotate.rotY(-Math.PI / 2);
         trWarrior.setScale(0.5f);
+        trWarrior.mul(trWarriorRotate);
         TransformGroup tgWarrior = new TransformGroup(trWarrior);
-
-        Shape3D head = (Shape3D) warriorNamedObjects.get("head");
-        head.setAppearance(skinAppearance());
 
         Shape3D leftHand = (Shape3D) warriorNamedObjects.get("left_hand");
         leftHand.setAppearance(skinAppearance());
@@ -78,7 +78,6 @@ public class Main extends JFrame {
         Shape3D downPart = (Shape3D) warriorNamedObjects.get("group1_____01");
         downPart.setAppearance(armorAppearance());
 
-        tgWarrior.addChild(head.cloneTree());
         tgWarrior.addChild(leftHand.cloneTree());
         tgWarrior.addChild(rightHand.cloneTree());
         tgWarrior.addChild(torso.cloneTree());
@@ -112,6 +111,32 @@ public class Main extends JFrame {
         tgAxe.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         tgAxe.addChild(minArrRotation);
         tgWarrior.addChild(tgAxe);
+
+        Shape3D head = (Shape3D) warriorNamedObjects.get("head");
+        head.setAppearance(skinAppearance());
+
+        TransformGroup tgHead = new TransformGroup();
+        tgHead.addChild(head.cloneTree());
+
+        Transform3D minRotationAxis = new Transform3D();
+        minRotationAxis.setTranslation(new Vector3d(-0.19, 0, 0));
+
+        Alpha minRotationAlpha =
+                new Alpha(1, Alpha.INCREASING_ENABLE, 1000, 0, 2000, 0, 0, 0, 0, 0);
+
+        RotationInterpolator minHeadRotation = new RotationInterpolator(
+                minRotationAlpha,
+                tgHead,
+                minRotationAxis,
+                (float) Math.PI,
+                0
+        );
+
+        BoundingSphere headBounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
+        minHeadRotation.setSchedulingBounds(headBounds);
+        tgHead.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        tgHead.addChild(minHeadRotation);
+        tgWarrior.addChild(tgHead);
 
         BranchGroup theScene = new BranchGroup();
         theScene.addChild(tgWarrior);
