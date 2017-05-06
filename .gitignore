@@ -65,8 +65,6 @@ fabric.properties
 
 ### Java ###
 # Compiled class file
-*.class
-
 # Log file
 *.log
 
@@ -104,3 +102,6 @@ hs_err_pid*
 
 # End of https://www.gitignore.io/api/java,linux,intellij
 !/lib/j3d-org-java3d-all.jar
+!/lib/j3dcore.jar
+!/lib/j3dutils.jar
+!/lib/vecmath.jar
