@@ -12,6 +12,7 @@ import com.sun.j3d.loaders.objectfile.ObjectFile;
 import com.sun.j3d.utils.image.TextureLoader;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -34,14 +35,14 @@ public class Main extends JFrame {
         bgLight.addChild(light1);
         simpUniv.addBranchGraph(bgLight);
 
-
         OrbitBehavior ob = new OrbitBehavior(myCanvas3D);
         ob.setSchedulingBounds(new BoundingSphere(new Point3d(0.0, 0.0, 0.0), Double.MAX_VALUE));
         simpUniv.getViewingPlatform().setViewPlatformBehavior(ob);
 
 
         this.setTitle("Warrior");
-        this.setSize(700, 700);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setUndecorated(true);
         this.getContentPane().add("Center", myCanvas3D);
         this.setVisible(true);
     }
@@ -63,118 +64,58 @@ public class Main extends JFrame {
         TransformGroup tgWarrior = new TransformGroup(trWarrior);
 
         Shape3D head = (Shape3D) warriorNamedObjects.get("head");
-        Appearance headApp = new Appearance();
-        setToMyDefaultAppearance(headApp, new Color3f(0.5f, 0.2f, 0.4f));
-        head.setAppearance(headApp);
+        head.setAppearance(skinAppearance());
 
         Shape3D leftHand = (Shape3D) warriorNamedObjects.get("left_hand");
-        Appearance leftHandApp = new Appearance();
-        setToMyDefaultAppearance(leftHandApp, new Color3f(1.0f, 0.9f, 0.2f));
-        leftHand.setAppearance(leftHandApp);
+        leftHand.setAppearance(skinAppearance());
 
         Shape3D rightHand = (Shape3D) warriorNamedObjects.get("right_hand");
-        Appearance rightHandApp = new Appearance();
-        setToMyDefaultAppearance(rightHandApp, new Color3f(1.0f, 0.9f, 0.2f));
-        rightHand.setAppearance(rightHandApp);
+        rightHand.setAppearance(skinAppearance());
 
         Shape3D torso = (Shape3D) warriorNamedObjects.get("group1_____02");
-        Appearance torsoApp = new Appearance();
-        setToMyDefaultAppearance(torsoApp, new Color3f(1.0f, 0.3f, 0.2f));
-        torso.setAppearance(torsoApp);
+        torso.setAppearance(armorAppearance());
 
         Shape3D downPart = (Shape3D) warriorNamedObjects.get("group1_____01");
-        Appearance downPartApp = new Appearance();
-        setToMyDefaultAppearance(downPartApp, new Color3f(1.0f, 0.3f, 0.2f));
-        downPart.setAppearance(downPartApp);
+        downPart.setAppearance(armorAppearance());
+
+        tgWarrior.addChild(head.cloneTree());
+        tgWarrior.addChild(leftHand.cloneTree());
+        tgWarrior.addChild(rightHand.cloneTree());
+        tgWarrior.addChild(torso.cloneTree());
+        tgWarrior.addChild(downPart.cloneTree());
 
         Shape3D axe = (Shape3D) warriorNamedObjects.get("box02_group1");
-        Appearance axeApp = new Appearance();
-        setToMyDefaultAppearance(axeApp, new Color3f(1.0f, 0.3f, 0.2f));
-        axe.setAppearance(axeApp);
+        axe.setAppearance(axeAppearance());
 
-        Shape3D[] warrior = new Shape3D[]{
-                head,
-                leftHand,
-                rightHand,
-                torso,
-                downPart,
-                axe,
-        };
+        TransformGroup tgAxe = new TransformGroup();
+        tgAxe.addChild(transformNode(
+                axe.cloneTree(),
+                new Vector3d(0.19, -0.45, 0),
+                createRotationMatrix(0, -Math.PI / 2, -Math.PI / 2)
+        ));
 
-        for (Shape3D shape : warrior) {
-            tgWarrior.addChild(shape.cloneTree());
-        }
+        Transform3D minPosition = new Transform3D();
+        minPosition.rotZ(-Math.PI / 2);
+        Alpha minPositionAlpha =
+                new Alpha(1, Alpha.INCREASING_ENABLE, 1000, 0, 2000, 0, 0, 0, 0, 0);
 
-        Shape3D body = (Shape3D) warriorNamedObjects.get("polygon0");
-        Appearance bodyApp = new Appearance();
-        setToMyDefaultAppearance(bodyApp, new Color3f(0.2f, 0.3f, 0.2f));
-        body.setAppearance(bodyApp);
+        PositionInterpolator minArrRotation = new PositionInterpolator(
+                minPositionAlpha,
+                tgAxe,
+                minPosition,
+                0f,
+                -0.5f
+        );
 
-        TransformGroup tgBody = new TransformGroup();
-        tgBody.addChild(body.cloneTree());
-
-        Transform3D minArrowRotationAxis2 = new Transform3D();
-        minArrowRotationAxis2.rotX(-Math.PI / 2);
-        Alpha minRotationAlpha2 = new Alpha(1, Alpha.INCREASING_ENABLE, 1000, 0, 100, 0, 0, 0, 0, 0);
-        RotationInterpolator minArrRotation2 = new RotationInterpolator(minRotationAlpha2, tgBody, minArrowRotationAxis2, 0.03f, 0.0f); //опис руху стрілки
-        BoundingSphere bounds2 = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
-        minArrRotation2.setSchedulingBounds(bounds2);
-        tgBody.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-        tgBody.addChild(minArrRotation2);
-        tgWarrior.addChild(tgBody);
-
-        //////////////////////////////////////////////////////////
-        Shape3D ball1 = (Shape3D) warriorNamedObjects.get("ball1");
-        Appearance ballApp1 = new Appearance();
-        setToMyDefaultAppearance(ballApp1, new Color3f(0.5f, 0.2f, 0.0f));
-        ball1.setAppearance(ballApp1);
-
-        TransformGroup tgBall1 = new TransformGroup();
-        tgBall1.addChild(ball1.cloneTree());
-
-        Transform3D minArrowRotationAxis1 = new Transform3D();
-        minArrowRotationAxis1.rotY(Math.PI / 2);
-        Alpha minRotationAlpha1 = new Alpha(1, Alpha.INCREASING_ENABLE, 1000, 0, 2000, 0, 0, 0, 0, 0);
-        RotationInterpolator minArrRotation1 = new RotationInterpolator(minRotationAlpha1, tgBall1, minArrowRotationAxis1, (float) Math.PI, (float) Math.PI * 2); //опис руху стрілки
-        BoundingSphere bounds1 = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
-        minArrRotation1.setSchedulingBounds(bounds1);
-        tgBall1.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-        tgBall1.addChild(minArrRotation1);
-        tgWarrior.addChild(tgBall1);
-
-        ////////////////////////////////////////
-        Shape3D ball = (Shape3D) warriorNamedObjects.get("ball2");
-        Appearance ballApp = new Appearance();
-        setToMyDefaultAppearance(ballApp, new Color3f(0.7f, 0.0f, 0.0f));
-        ball.setAppearance(ballApp);
-
-        TransformGroup tgBall = new TransformGroup();
-        tgBall.addChild(ball.cloneTree());
-
-        Transform3D minArrowRotationAxis = new Transform3D();
-        minArrowRotationAxis.rotY(Math.PI / 2);
-        Alpha minRotationAlpha = new Alpha(1, Alpha.INCREASING_ENABLE, 1000, 0, 2000, 0, 0, 0, 0, 0);
-        RotationInterpolator minArrRotation = new RotationInterpolator(minRotationAlpha, tgBall, minArrowRotationAxis, (float) Math.PI, (float) Math.PI * 2); //опис руху стрілки
         BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
         minArrRotation.setSchedulingBounds(bounds);
-        tgBall.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-        tgBall.addChild(minArrRotation);
-        tgWarrior.addChild(tgBall);
-
-        //////////////////////////////////////////
-        Transform3D minArrowRotationAxis3 = new Transform3D();
-        minArrowRotationAxis3.rotX(Math.PI / 2);
-        Alpha minRotationAlpha3 = new Alpha(1, Alpha.INCREASING_ENABLE, 2900, 0, 100, 0, 0, 0, 0, 0);
-        RotationInterpolator minArrRotation3 = new RotationInterpolator(minRotationAlpha3, tgBody, minArrowRotationAxis3, 0.0f, -0.03f); //опис руху стрілки
-        BoundingSphere bounds3 = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
-        minArrRotation3.setSchedulingBounds(bounds3);
-        tgBody.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-        tgBody.addChild(minArrRotation3);
+        tgAxe.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        tgAxe.addChild(minArrRotation);
+        tgWarrior.addChild(tgAxe);
 
         BranchGroup theScene = new BranchGroup();
         theScene.addChild(tgWarrior);
 
-        ////////////////////////////////////
         TextureLoader t = new TextureLoader("fon.jpg", myCanvas3D);
         Background bg = new Background(t.getImage());
         bg.setImageScaleMode(Background.SCALE_FIT_ALL);
@@ -186,11 +127,92 @@ public class Main extends JFrame {
         simpUniv.addBranchGraph(theScene);
     }
 
+    private static TransformGroup transformNode(Node obj, Vector3d pos, Matrix3d rotation) {
+        TransformGroup transformGroup = new TransformGroup();
+        Transform3D rotationTransform = new Transform3D();
+        Transform3D moveTransform = new Transform3D();
+
+        moveTransform.setTranslation(pos);
+        rotationTransform.setRotation(rotation);
+        moveTransform.mul(rotationTransform);
+
+        transformGroup.setTransform(moveTransform);
+        transformGroup.addChild(obj);
+
+        return transformGroup;
+    }
+
+    private static Matrix3d createRotationMatrix(double x, double y, double z) {
+        Matrix3d rotX = new Matrix3d();
+        Matrix3d rotY = new Matrix3d();
+        Matrix3d rotZ = new Matrix3d();
+
+        rotX.rotX(x);
+        rotY.rotY(y);
+        rotZ.rotZ(z);
+
+        rotX.mul(rotY);
+        rotX.mul(rotZ);
+
+        return rotX;
+    }
+
     public static void main(String[] args) throws IOException {
         new Main().render();
     }
 
-    private static void setToMyDefaultAppearance(Appearance app, Color3f col) {
-        app.setMaterial(new Material(col, col, col, col, 150.0f));
+    private static Appearance skinAppearance() {
+        Appearance ap = new Appearance();
+        Color3f col = new Color3f(241f / 255, 194f / 255, 125f / 255);
+        Material material = new Material(col, col, col, col, 100.0F);
+
+        material.setLightingEnable(true);
+        ap.setMaterial(material);
+
+        addTexture(ap, "skin.jpg");
+
+        return ap;
     }
+
+    private static Appearance armorAppearance() {
+        Appearance ap = new Appearance();
+        Color3f col = new Color3f(84f / 255, 17f / 255, 1f / 255);
+        Material material = new Material(col, col, col, col, 100.0F);
+
+        material.setLightingEnable(true);
+        ap.setMaterial(material);
+
+        addTexture(ap, "armor.jpg");
+
+        return ap;
+    }
+
+    private static Appearance axeAppearance() {
+        Appearance ap = new Appearance();
+        Color3f col = new Color3f(24f / 255, 24f / 255, 24f / 255);
+        Material material = new Material(col, col, col, col, 100.0F);
+
+        material.setLightingEnable(true);
+        ap.setMaterial(material);
+
+        addTexture(ap, "axe.jpg");
+
+        return ap;
+    }
+
+    private static void addTexture(Appearance ap, String picture) {
+        TextureLoader loader = new TextureLoader(picture, "LUMINANCE", new Container());
+        Texture texture = loader.getTexture();
+
+        texture.setBoundaryModeS(Texture.WRAP);
+        texture.setBoundaryModeT(Texture.WRAP);
+        texture.setBoundaryColor(new Color4f(0.0f, 1.0f, 1.0f, 0.0f));
+
+        TextureAttributes texAttr = new TextureAttributes();
+        texAttr.setTextureMode(TextureAttributes.MODULATE);
+
+        ap.setTexture(texture);
+        ap.setTextureAttributes(texAttr);
+    }
+
 }
